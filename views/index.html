@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Welcome</title>
+</head>
+<body>
+    <div class="absolute z-40 bg-gray-50 justify-center">
+        <div id="loading" class="w-screen h-screen">
+            <div role="status">
+                <svg aria-hidden="true" class="m-auto w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                    <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+                </svg>
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+    </div>
+    <div id="connected-wifi">
+
+    </div>
+    
+      <div class="container flex justify-center mx-auto border-blue-100 mt-[20px]">
+        <div class="flex flex-col">
+            <div class="w-screen md:w-full">
+                <div class="border-b border-gray-200 overflow-x-scroll shadow">
+                    <table class="block md:max-w-screen-sm p-2 m-1 md:max-w-screen-md">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-2 text-xs text-gray-500">
+                                    No
+                                </th>
+                                <th class="px-6 py-2 text-xs text-gray-500">
+                                    SSID
+                                </th>
+                                <th class="px-6 py-2 text-xs text-gray-500">
+                                    BSSID
+                                </th>
+                                <th class="px-6 py-2 text-xs text-gray-500">
+                                    Frequency
+                                </th>
+                                <th class="px-6 py-2 text-xs text-gray-500">
+                                    Signal Strength
+                                </th>
+                                <th class="px-6 py-2 text-xs text-gray-500">
+                                    
+                                </th>
+                                <th class="px-6 py-2 text-xs text-gray-500">
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white" id="list-member">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<script>
+    let connectedSSId = ''
+    $(document).ready(function(){
+            $.ajax({
+                url: '/networks/connect',
+                type: 'get',
+                dataType: 'JSON',
+                success: function(response){
+                    if(response.length >= 1 ){
+                        response = response[0]
+                        getListNetworks(response.connection)
+                        const div =  "<div class='container flex justify-center mx-auto border-yellow-100 mt-10'>"+
+                            "<div class='flex flex-col'>"+
+                            "<div class='w-[350px] flex-row'>"+
+                            "<div class='border-b border-yellow-200 shadow m-2 p-4 flex rounded'>"+
+                            "<div class='flex-col'>"+
+                                "<p> ssid   : "+response.connection+"</p>"+
+                                "<p> device :"+response.type+"</p>"+
+                                "<p> ip     :"+ response.gatewayV4+"</p>"+
+                                "<p> loss    :"+ response.loss+"</p>"+
+        
+                            "</div>"+
+                            "<div class='m-auto'>"+
+                                "<button class='bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-full' onclick='disconnect(\""+response.connection+"\")'>"+ "disconnect" +"</button>"+
+                            "</div>"+
+                            "</div>"+
+                            "<h1>"+"Service List"+"</h1>"+
+                            "<div id='nmap' class'justify-content flex flex-col'>"+
+                            "</div>"+
+                            "</div>"+
+                            "</div>"+
+                            "</div>";
+                        $('#connected-wifi').append(div);
+                        for(let i=0; i< response.nmap.length-1; i++){
+                            if(i<4){
+                                continue
+                            }
+                            lines = "<p class='text-sm'>"+response.nmap[i]+"</p>"
+                            $('#nmap').append(lines)
+                        }
+                    } else {
+                        getListNetworks()
+                        const div =  "<div class='container flex justify-center mx-auto border-yellow-100 mt-10'>"+
+                            "<div class='flex flex-col'>"+
+                            "<div class='w-[350px] flex-row'>"+
+                            "<div class='border-b border-yellow-200 shadow m-2 p-4 flex rounded'>"+
+                            "<div class='flex-col m-auto'>"+
+                                "<h1>Anda tidak terhubung ke koneksi</h1>"
+                            "</div>"+
+                            "</div>"+
+                            "</div>"+
+                            "</div>";
+                        $('#connected-wifi').append(div);
+                    }
+                }
+                
+            });
+        });
+
+
+   function getListNetworks(connected){
+        $.ajax({
+            url: '/networks',
+            type: 'get',
+            dataType: 'JSON',
+            success: function(response){
+                if(getListNetworks){
+                    var len = response.length;
+                    response = response.filter(wifi => wifi.ssid !== connectedSSId)
+                    for(let i = 0; i < len; i++){
+                        rowNum = i+1
+                        const data = response[i]
+                        try{
+                            let table_row = "<tr class='whitespace-nowrap'>"+
+                                "<td class='px-6 py-4'>" + 
+                                    rowNum
+                                + "</td>" +
+                                "<td class='px-6 py-4'>" + 
+                                    data.ssid
+                                + "</td>" +
+                                "<td class='px-6 py-4'>" + 
+                                    "<div class='text-sm text-gray-500 truncate'>"+data.bssid + "</div>"
+                                + "</td>" +
+                                "<td class='px-6 py-4'>" + 
+                                    "<div class='text-sm text-gray-500 truncate'>"+data.frequency + "</div>"
+                                + "</td>" +
+                                "<td class='px-6 py-4'>" + 
+                                    "<div class='text-sm text-gray-500 truncate'>"+data.signal_level + "</div>"
+                                + "</td>";
+                            if(data.ssid === connected){
+                                table_row +="<td class='px-6 py-4'>" + 
+                                    "<button class=\"bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-full\" onclick='disconnect( \""+data.ssid.toString()+"\")'>"+ "disconnect" + "</button>"
+                                + "</td>" 
+                                "</tr>";
+                            } else{
+                                table_row += "<td class='px-6 py-4'>" + 
+                                    "<button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full\" onclick='connect( \""+data.ssid.toString()+"\",\""+data.security+"\" )'>"+ "Sambungkan" + "</button>"
+                                + "</td>" 
+                                "</tr>";
+                            }
+                            $('#list-member').append(table_row);
+                        }catch(e){
+                            continue
+                        }
+                    }
+                }else{
+                    var len = response.length;
+                    response = response.filter(wifi => wifi.ssid !== connectedSSId)
+                    for(let i = 0; i < len; i++){
+                        rowNum = i+1
+                        const data = response[i]
+                        try{
+                            const table_row = "<tr class='whitespace-nowrap'>"+
+                                "<td class='px-6 py-4'>" + 
+                                    rowNum
+                                + "</td>" +
+                                "<td class='px-6 py-4'>" + 
+                                    data.ssid
+                                + "</td>" +
+                                "<td class='px-6 py-4'>" + 
+                                    "<div class='text-sm text-gray-500 truncate'>"+data.bssid + "</div>"
+                                + "</td>" +
+                                "<td class='px-6 py-4'>" + 
+                                    "<div class='text-sm text-gray-500 truncate'>"+data.frequency + "</div>"
+                                + "</td>" +
+                                "<td class='px-6 py-4'>" + 
+                                    "<div class='text-sm text-gray-500 truncate'>"+data.signal_level + "</div>"
+                                + "</td>" +
+                                "<td class='px-6 py-4'>" + 
+                                    "<button class=\"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full\" onclick='connect( \""+data.ssid.toString()+"\",\""+data.security+"\" )'>"+ "Sambungkan" + "</button>"
+                                + "</td>" 
+                                "</tr>";
+                            $('#list-member').append(table_row);
+                        }catch(e){
+                            continue
+                        }
+                    }
+                }
+            }
+        });
+    };
+
+    function connect(ssid, security){
+        let requestBody = {}
+        if(security){
+            const password = prompt("enter wifi password: ")
+            requestBody = {
+            ssid: ssid,
+            password: password
+            }
+        }else{
+            requestBody = {
+                ssid: ssid,
+            }
+        }
+        $.ajax({
+            url: '/networks/connect',
+            dataType: 'json',
+            type: 'POST',
+            data: JSON.stringify(requestBody),
+            contentType: 'application/json; charset=utf-8',
+            success: function( data ){
+                window.location.replace("/");
+            },
+            error: function( errorThrown ){
+                connect(ssid, security)
+            }
+        });
+    }
+
+    $('#loading')
+    .hide()  // Hide it initially
+    .ajaxStart(function() {
+        $(this).show();
+    })
+    .ajaxStop(function() {
+        $(this).hide();
+    });
+
+    function disconnect(ssid){
+        console.log(ssid)
+        const requestBody = {
+            ssid: ssid,
+        }
+
+        $.ajax({
+            url: '/networks/connect',
+            type: 'DELETE',
+            data: JSON.stringify(requestBody),
+            contentType: 'application/json; charset=utf-8',
+            success: function( data ){
+                window.location.replace("/");
+            },
+            error: function( errorThrown ){
+                alert("Wifi tidak dapat diputuskan")
+            }
+        });
+    }
+
+</script>
+</html>
