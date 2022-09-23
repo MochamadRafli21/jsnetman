@@ -1,6 +1,6 @@
 const express = require('express');
 const network = require("node-network-manager");
-const { exec , spawnSync} = require('child_process');
+const {spawnSync} = require('child_process');
 const wifi = require('node-wifi');
 const bodyParser = require('body-parser');
 const path = require( 'path' );
@@ -20,7 +20,6 @@ app.get('/', async(req, res) => {
 
 app.get('/networks',jsonParser, async(req,res) =>{
     const networks = await wifi.scan()
-    console.log(networks)
     res.json(networks)
 });
 
@@ -58,7 +57,6 @@ app.get('/networks/connect',jsonParser, async(req,res) => {
 
 app.delete('/networks/connect',jsonParser,(req,res) => {
   const ssid = req.body.ssid
-  console.log(req.body)
   if(!ssid){
     throw new Error('ssid is required')
   }
@@ -70,7 +68,6 @@ app.delete('/networks/connect',jsonParser,(req,res) => {
 app.post('/networks/connect',jsonParser, async(req,res) => {
     const ssid = req.body.ssid
     const password = req.body.password
-    console.log(req.body)
     try{
       await wifi.connect({ ssid: ssid, password: password });
     }catch(e){
