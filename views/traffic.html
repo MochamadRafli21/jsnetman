@@ -21,6 +21,10 @@
     <div class="my-10 flex justify-center w-screen">
         <button class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full' onclick="monitorOff()"> List Wifi</button>
     </div>
+
+    <div class="my-10 flex justify-center w-screen">
+        <button class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full' onclick="result()"> Show Available Networks to Scane</button>
+    </div>
     
       <div class="container flex justify-center mx-auto border-blue-100 mt-[20px]">
         <div class="flex flex-col">
@@ -54,9 +58,6 @@
             url: '/networks/monitor/scan',
             type: 'get',
             dataType: 'JSON',
-            success: function(response){
-                result()
-            }
         });
     };
 

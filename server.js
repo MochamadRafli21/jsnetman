@@ -46,35 +46,45 @@ app.get('/networks',jsonParser, async(req,res) =>{
 app.get('/networks/monitor/on', jsonParser, async(req, res) => {
   // mencari nama wifi card
   const interface = getListInterface()
-  
+  exec(`rm scan/*`)
+
   // connect dengan service airmon-ng
-  exec(`echo calonsukses | sudo -S airmon-ng start ${interface}`)
+  exec(`echo aalagung06 | sudo -S airmon-ng start ${interface}`)
 
   res.json(interface)
 })
 
+function execScan(interface){
+  return new Promise((resolve, reject) => {
+    exec(`echo "aalagung06" | sudo -S timeout 5s airodump-ng -w scan/output ${interface} --output-format csv`,{ maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
+      if (err) {
+        console.warn(`exec error: ${err}`);
+      }
+
+      resolve(stdout? stdout:stderr)
+    });    
+  })
+}
+
 app.get('/networks/monitor/scan', jsonParser, async(req, res) => {
   const interface = getListInterface()
-
-  await exec(`echo "calonsukses" | sudo -S timeout 5s airodump-ng -w scan/output ${interface} --output-format csv`,{ maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
-    if (err) {
-      console.error(`exec error: ${err}`);
-      return;
-    }
-  });
+  await execScan(interface)
 
   res.json("success")
 })
 
 app.get('/networks/monitor/result', jsonParser, (req, res) => {
-  const ls = spawnSync("ls", ["scan"])
-  files = ls.stdout.toString().trim().split("\n")[0]
+  let ls = spawnSync("ls", ["scan"])
+  let files = ls.stdout.toString().trim().split("\n")[0]
+  while(ls.stdout.toString() === "" && fs.readFileSync(path.join(__dirname+`/scan/${files}`)).toString().match("/BSSID/g") !== null){
+    ls = spawnSync("ls", ["scan"])
+    files = ls.stdout.toString().trim().split("\n")[0]
+  }
   output = ''
   csv = fs.readFileSync(path.join(__dirname+`/scan/${files}`)).toString()
+  console.log(csv.toString())
   if(csv){
     output += csv.toString().trim()
-  }else{
-    output += "traffic kosong"
   }
   // for(let i = files.length-1; i >= 0;i--){
   //   csv = fs.readFileSync(path.join(__dirname+`/scan/${files[i]}`)).toString()
@@ -82,14 +92,16 @@ app.get('/networks/monitor/result', jsonParser, (req, res) => {
   //     output += csv.toString().trim()
   //   }
   // }
+  console.log(output)
   res.json(output.split("\n"))
 })
+
 app.get('/networks/monitor/off', jsonParser, async(req, res) => {
 
   const interface = getListInterface()
 
   // menghentikan service airmon
-  exec(`echo calonsukses |sudo airmon-ng stop ${interface}`)
+  exec(`echo aalagung |sudo airmon-ng stop ${interface}`)
   res.json(interface)
 
 })
