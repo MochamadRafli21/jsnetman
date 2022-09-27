@@ -15,6 +15,19 @@ wifi.init({
 
 const app = express()
 
+
+const execScan = (interface) => {
+  return new Promise((resolve, reject) => {
+    exec(`echo "calonsukses" | sudo -S timeout 5s airodump-ng -w scan/output ${interface} --output-format csv`,{ maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
+      if (err) {
+        console.warn(`exec error: ${err}`);
+      }
+
+      resolve(stdout? stdout:stderr)
+    });    
+  })
+}
+
 const getListInterface = () => {
   let listIntervace = spawnSync('iw', ['dev'])
   listIntervace = listIntervace.stdout.toString().trim().split('\n')
@@ -28,6 +41,52 @@ const getListInterface = () => {
 
   return interface
 }
+
+const pcaptotext = (files) => {
+  return new Promise((resolve, reject) => {
+    exec(`echo calonsukses | sudo -S tcpdump -A -r ${files} > csv/output.txt`, (err, stdout, stderr) => {
+    if (err) {
+        console.warn(`exec error: ${err}`);
+      }
+      resolve(stdout? stdout:stderr)
+    })
+  })
+}
+
+const startInterFace = (interface) => {
+  return new Promise((resolve, reject) => {
+    exec(`echo calonsukses | sudo -S airmon-ng start ${interface}`, (err, stdout, stderr) => {
+    if (err) {
+        console.warn(`exec error: ${err}`);
+      }
+      resolve(stdout? stdout:stderr)
+    })
+  })
+}
+
+const tunnelMonitor = (name, channel, tragetBssid, interface) => {
+  return new Promise((resolve, reject) => {
+    exec(`echo "calonsukses" | sudo -S timeout 10s airodump-ng --bssid ${tragetBssid} --essid ${name} -c ${channel} -w scan/output ${interface}`, { maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
+      if (err) {
+        console.warn(`exec error: ${err}`);
+      }
+      resolve(stdout? stdout.toString():stderr)
+    })
+  })
+}
+
+const decrypt = (name, bssid, password, file) => {
+  return new Promise((resolve, reject) => {
+    exec(`echo "calonsukses" | sudo -S airdecap-ng -b ${bssid} -e ${name} -p ${password} ${file}`, { maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
+      if (err) {
+        console.warn(`exec error: ${err}`);
+      }
+      resolve(stdout? stdout:stderr)
+      
+    })
+  })
+}
+
 // endpoint untuk redirect ke view list wifi
 app.get('/', async(req, res) => {
   res.sendFile(path.join(__dirname+'/views/index.html'));
@@ -49,28 +108,43 @@ app.get('/networks/monitor/on', jsonParser, async(req, res) => {
   exec(`rm scan/*`)
 
   // connect dengan service airmon-ng
-  exec(`echo aalagung06 | sudo -S airmon-ng start ${interface}`)
-
+  await startInterFace(interface)
   res.json(interface)
 })
-
-function execScan(interface){
-  return new Promise((resolve, reject) => {
-    exec(`echo "aalagung06" | sudo -S timeout 5s airodump-ng -w scan/output ${interface} --output-format csv`,{ maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
-      if (err) {
-        console.warn(`exec error: ${err}`);
-      }
-
-      resolve(stdout? stdout:stderr)
-    });    
-  })
-}
 
 app.get('/networks/monitor/scan', jsonParser, async(req, res) => {
   const interface = getListInterface()
   await execScan(interface)
-
   res.json("success")
+})
+
+app.post('/networks/monitor/scan', jsonParser, async(req, res) => {
+  const {ssid, channel, bssid, password} = req.body
+  const interface = getListInterface()
+  await tunnelMonitor(ssid, channel, bssid, interface)
+  let ls = spawnSync("ls", ["scan"])
+  let files = ls.stdout.toString().trim().split("\n")
+  for(let i = 0 ; i < files.length; i++){
+    if(files[i].includes(".cap")){
+      files = files[i]
+      break
+    }
+  }
+  await decrypt(ssid, bssid, password, `scan/${files}`)
+  ls = spawnSync("ls", ["scan"])
+  files = ls.stdout.toString().trim().split("\n")
+  for(let i = 0 ; i < files.length; i++){
+    if(files[i].includes("dec.cap")){
+      files = files[i]
+      break
+    }
+  }
+  await pcaptotext(`scan/${files}`);
+  ls = spawnSync("ls", ["csv"])
+  files = ls.stdout.toString().trim().split("\n")[0]
+  const text = fs.readFileSync(path.join(__dirname+`/csv/${files}`)).toString()
+
+  res.json(text)
 })
 
 app.get('/networks/monitor/result', jsonParser, (req, res) => {
@@ -82,7 +156,6 @@ app.get('/networks/monitor/result', jsonParser, (req, res) => {
   }
   output = ''
   csv = fs.readFileSync(path.join(__dirname+`/scan/${files}`)).toString()
-  console.log(csv.toString())
   if(csv){
     output += csv.toString().trim()
   }
@@ -92,7 +165,6 @@ app.get('/networks/monitor/result', jsonParser, (req, res) => {
   //     output += csv.toString().trim()
   //   }
   // }
-  console.log(output)
   res.json(output.split("\n"))
 })
 

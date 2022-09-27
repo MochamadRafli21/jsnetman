@@ -23,7 +23,7 @@
     </div>
 
     <div class="my-10 flex justify-center w-screen">
-        <button class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full' onclick="result()"> Show Available Networks to Scane</button>
+        <button class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full' onclick="result()"> Refresh list</button>
     </div>
     
       <div class="container flex justify-center mx-auto border-blue-100 mt-[20px]">
@@ -58,6 +58,40 @@
             url: '/networks/monitor/scan',
             type: 'get',
             dataType: 'JSON',
+            success: function(response){
+                    result();
+                }
+            });
+    };
+
+    function decrypt(ssid, channel, bssid, security){
+        let requestBody = {}
+        if(security){
+            const password = prompt("enter wifi password: ")
+            requestBody = {
+            ssid: ssid,
+            channel: channel,
+            bssid: bssid,
+            password: password
+            }
+        }else{
+            requestBody = {
+                ssid: ssid,
+            }
+        }
+        $.ajax({
+            url: '/networks/monitor/scan',
+            dataType: 'json',
+            type: 'POST',
+            data: JSON.stringify(requestBody),
+            contentType: 'application/json; charset=utf-8',
+            success: function( data ){
+                console.log(data)
+            },
+            error: function( errorThrown ){
+                console.log(errorThrown)
+                // decrypt(ssid, channel, bssid, security)
+            }
         });
     };
 
@@ -70,9 +104,30 @@
                 var len = response.length;
                 for(let i = 0; i < len; i++){
                     const data = response[i].split(',')
+                    console.log()
+                    console.log(data[0])
+                    if(data[0] === "Station MAC"){
+                        break
+                    }
                     try{
                         let table_row = "<tr class='whitespace-nowrap'"+` id=row${i}>`+"</tr>";
                         $('#list-member').append(table_row);
+                        if(data[0] !== "BSSID"){
+                            const ssid = data[13]
+                            const channel = data[3]
+                            const bssid = data[0]
+                            const security = data[6]
+                            const interface = "wlp3s0mon"
+
+                            const btn = "<button class='bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-full' onclick='decrypt(\""+ssid+"\",\""+channel+"\",\""+bssid+"\",\""+interface+"\",\""+security+"\")'>"+ "decrypt" +"</button>"
+                            $(`#row${i}`).append(btn)
+
+                        }else{
+                            col = "<td class='px-6 py-4'>" + 
+                                "Decrypt"
+                            + "</td>";
+                            $(`#row${i}`).append(col)           
+                        }
                         for(let j = 0; j < data.length;j++){
                             col = "<td class='px-6 py-4'>" + 
                                 data[j]
