@@ -66,7 +66,7 @@ const startInterFace = (interface) => {
 
 const tunnelMonitor = (name, channel, tragetBssid, interface) => {
   return new Promise((resolve, reject) => {
-    exec(`echo "calonsukses" | sudo -S timeout 10s airodump-ng --bssid ${tragetBssid} --essid ${name} -c ${channel} -w scan/output ${interface}`, { maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
+    exec(`echo "calonsukses" | sudo -S timeout 40s airodump-ng --bssid ${tragetBssid} --essid ${name} -c ${channel} -w scan/output ${interface}`, { maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
       if (err) {
         console.warn(`exec error: ${err}`);
       }
@@ -173,7 +173,7 @@ app.get('/networks/monitor/off', jsonParser, async(req, res) => {
   const interface = getListInterface()
 
   // menghentikan service airmon
-  exec(`echo aalagung |sudo airmon-ng stop ${interface}`)
+  exec(`echo calonsukses |sudo airmon-ng stop ${interface}`)
   res.json(interface)
 
 })
@@ -232,5 +232,4 @@ app.post('/networks/connect',jsonParser, async(req,res) => {
       
 });
 
-app.post('')
 const server = app.listen(3000)
