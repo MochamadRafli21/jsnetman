@@ -75,6 +75,18 @@ const tunnelMonitor = (name, channel, tragetBssid, interface) => {
   })
 }
 
+const monitoroff = (interface) => {
+  return new Promise((resolve, reject) => {
+    exec(`echo calonsukses |sudo airmon-ng stop ${interface}`, (stdout,stderr,error)=>{
+      if(error) {
+        console.warn(`airmon off error::${error}`)
+      }
+
+      resolve(stdout? stdout.toString():stderr)
+    })
+  })
+}
+
 const decrypt = (name, bssid, password, file) => {
   return new Promise((resolve, reject) => {
     exec(`echo "calonsukses" | sudo -S airdecap-ng -b ${bssid} -e ${name} -p ${password} ${file}`, { maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
@@ -113,6 +125,8 @@ app.get('/networks/monitor/on', jsonParser, async(req, res) => {
 })
 
 app.get('/networks/monitor/scan', jsonParser, async(req, res) => {
+  await exec(`rm scan/*`)
+
   const interface = getListInterface()
   await execScan(interface)
   res.json("success")
@@ -159,12 +173,7 @@ app.get('/networks/monitor/result', jsonParser, (req, res) => {
   if(csv){
     output += csv.toString().trim()
   }
-  // for(let i = files.length-1; i >= 0;i--){
-  //   csv = fs.readFileSync(path.join(__dirname+`/scan/${files[i]}`)).toString()
-  //   if(csv){
-  //     output += csv.toString().trim()
-  //   }
-  // }
+
   res.json(output.split("\n"))
 })
 
@@ -173,14 +182,13 @@ app.get('/networks/monitor/off', jsonParser, async(req, res) => {
   const interface = getListInterface()
 
   // menghentikan service airmon
-  exec(`echo calonsukses |sudo airmon-ng stop ${interface}`)
+  await monitoroff(interface)
   res.json(interface)
 
 })
 
 app.get('/networks/connect',jsonParser, async(req,res) => {
     let networks = []
-    // TODO GET LOSS PACKAGE USING PING!!
     await network
     .getConnectionProfilesList(false)
     .then(async (data) => {

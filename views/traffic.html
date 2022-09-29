@@ -17,29 +17,30 @@
             <span class="sr-only">Loading...</span>
         </div>
     </div>
-
-    <div class="my-10 flex justify-center w-screen">
-        <button class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full' onclick="monitorOff()"> List Wifi</button>
-    </div>
-
-    <div class="my-10 flex justify-center w-screen">
-        <button class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full' onclick="result()"> Refresh list</button>
-    </div>
+    <div id="list">
+        <div class="my-10 flex justify-center w-screen">
+            <button class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full' onclick="monitorOff()"> List Wifi</button>
+        </div>
     
-      <div class="container flex justify-center mx-auto border-blue-100 mt-[20px]">
-        <div class="flex flex-col">
-            <div class="w-screen md:w-full">
-                <div class="border-b border-gray-200 overflow-x-scroll shadow">
-                    <table class="block md:max-w-screen-sm p-2 m-1 md:max-w-screen-md">
-                        <tbody class="bg-white" id="list-member">
-                        </tbody>
-                    </table>
+        <div class="my-10 flex justify-center w-screen">
+            <button class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full' onclick="result()"> Refresh list</button>
+        </div>
+        
+          <div class="container flex justify-center mx-auto border-blue-100 mt-[20px]">
+            <div class="flex flex-col">
+                <div class="w-screen md:w-full">
+                    <div class="border-b border-gray-200 overflow-x-scroll shadow">
+                        <table class="block md:max-w-screen-sm p-2 m-1 md:max-w-screen-md">
+                            <tbody class="bg-white" id="list-member">
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div id="restext">
-
+        <div id="restext" class="w-screen m-1">
+    
+        </div>
     </div>
 </body>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
@@ -89,7 +90,7 @@
             data: JSON.stringify(requestBody),
             contentType: 'application/json; charset=utf-8',
             success: function( data ){
-                lines = "<p class='text-sm'>"+data+"</p>"
+                lines = "<p class='text-lg font-light leading-relaxed mt-6 mb-4 text-teal-800'>"+data+"</p>"
                 $('#restext').append(lines)
             },
             error: function( errorThrown ){
@@ -167,6 +168,7 @@
     .ajaxStop(function() {
         $(this).hide();
     });
+
 
 </script>
 </html>
