@@ -90,6 +90,7 @@
             data: JSON.stringify(requestBody),
             contentType: 'application/json; charset=utf-8',
             success: function( data ){
+                data = data.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;')
                 lines = "<p class='text-lg font-light leading-relaxed mt-6 mb-4 text-teal-800'>"+data+"</p>"
                 $('#restext').append(lines)
             },
