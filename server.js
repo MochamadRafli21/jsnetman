@@ -18,7 +18,7 @@ const app = express()
 
 const execScan = (interface) => {
   return new Promise((resolve, reject) => {
-    exec(`echo "calonsukses" | sudo -S timeout 5s airodump-ng -w scan/output ${interface} --output-format csv`,{ maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
+    exec(`echo "rootpassword" | sudo -S timeout 5s airodump-ng -w scan/output ${interface} --output-format csv`,{ maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
       if (err) {
         console.warn(`exec error: ${err}`);
       }
@@ -44,7 +44,7 @@ const getListInterface = () => {
 
 const pcaptotext = (files) => {
   return new Promise((resolve, reject) => {
-    exec(`echo calonsukses | sudo -S tcpdump -A -r ${files} > csv/output.txt`, (err, stdout, stderr) => {
+    exec(`echo rootpasswor | sudo -S tcpdump -A -r ${files} > csv/output.txt`, (err, stdout, stderr) => {
     if (err) {
         console.warn(`exec error: ${err}`);
       }
@@ -55,7 +55,7 @@ const pcaptotext = (files) => {
 
 const startInterFace = (interface) => {
   return new Promise((resolve, reject) => {
-    exec(`echo calonsukses | sudo -S airmon-ng start ${interface}`, (err, stdout, stderr) => {
+    exec(`echo rootpasswor | sudo -S airmon-ng start ${interface}`, (err, stdout, stderr) => {
     if (err) {
         console.warn(`exec error: ${err}`);
       }
@@ -66,7 +66,7 @@ const startInterFace = (interface) => {
 
 const tunnelMonitor = (name, channel, tragetBssid, interface) => {
   return new Promise((resolve, reject) => {
-    exec(`echo "calonsukses" | sudo -S timeout 40s airodump-ng --bssid ${tragetBssid} --essid ${name} -c ${channel} -w scan/output ${interface}`, { maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
+    exec(`echo "rootpassword" | sudo -S timeout 40s airodump-ng --bssid ${tragetBssid} --essid ${name} -c ${channel} -w scan/output ${interface}`, { maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
       if (err) {
         console.warn(`exec error: ${err}`);
       }
@@ -77,7 +77,7 @@ const tunnelMonitor = (name, channel, tragetBssid, interface) => {
 
 const monitoroff = (interface) => {
   return new Promise((resolve, reject) => {
-    exec(`echo calonsukses |sudo airmon-ng stop ${interface}`, (stdout,stderr,error)=>{
+    exec(`echo rootpasswor |sudo airmon-ng stop ${interface}`, (stdout,stderr,error)=>{
       if(error) {
         console.warn(`airmon off error::${error}`)
       }
@@ -89,7 +89,7 @@ const monitoroff = (interface) => {
 
 const decrypt = (name, bssid, password, file) => {
   return new Promise((resolve, reject) => {
-    exec(`echo "calonsukses" | sudo -S airdecap-ng -b ${bssid} -e ${name} -p ${password} ${file}`, { maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
+    exec(`echo "rootpassword" | sudo -S airdecap-ng -b ${bssid} -e ${name} -p ${password} ${file}`, { maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
       if (err) {
         console.warn(`exec error: ${err}`);
       }
