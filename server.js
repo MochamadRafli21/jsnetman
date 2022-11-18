@@ -66,10 +66,11 @@ const startInterFace = (interface) => {
 
 const tunnelMonitor = (name, channel, tragetBssid, interface) => {
   return new Promise((resolve, reject) => {
-    exec(`echo "aalagung06" | sudo -S timeout 40s airodump-ng --bssid ${tragetBssid} --essid ${name} -c ${channel} -w scan/output ${interface}`, { maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
+    exec(`echo "aalagung06" | sudo -S timeout 100s airodump-ng --bssid ${tragetBssid} --essid ${name} -c ${channel} -w scan/output ${interface}`, { maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
       if (err) {
         console.warn(`exec error: ${err}`);
       }
+      console.log(stdout.toString())
       resolve(stdout? stdout.toString():stderr)
     })
   })
@@ -89,13 +90,23 @@ const monitoroff = (interface) => {
 
 const decrypt = (name, bssid, password, file) => {
   return new Promise((resolve, reject) => {
-    exec(`echo "aalagung06" | sudo -S airdecap-ng -b ${bssid} -e ${name} -p ${password} ${file}`, { maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
-      if (err) {
-        console.warn(`exec error: ${err}`);
-      }
-      resolve(stdout? stdout:stderr)
-      
-    })
+    if(password){
+      exec(`echo "aalagung06" | sudo -S airdecap-ng -b ${bssid} -e ${name} -p ${password} ${file}`, { maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
+        if (err) {
+          console.warn(`exec error: ${err}`);
+        }
+        resolve(stdout? stdout:stderr)
+        
+      })  
+    }else{
+      exec(`echo "aalagung06" | sudo -S airdecap-ng -b ${bssid} -e ${name} ${file}`, { maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
+        if (err) {
+          console.warn(`exec error: ${err}`);
+        }
+        resolve(stdout? stdout:stderr)
+        
+      })
+    }
   })
 }
 
