@@ -23,7 +23,7 @@
         </div>
     
         <div class="my-10 flex justify-center w-screen">
-            <button class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full' onclick="result()"> Refresh list</button>
+            <button class='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full' onclick="scanNet()"> Refresh list</button>
         </div>
         
           <div class="container flex justify-center mx-auto border-blue-100 mt-[20px]">
@@ -70,7 +70,7 @@
 
     function decrypt(ssid, channel, bssid, security){
         let requestBody = {}
-        if(security){
+        if(!security.includes("OPN")){
             const password = prompt("enter wifi password: ")
             requestBody = {
             ssid: ssid,
@@ -81,7 +81,9 @@
         }else{
             requestBody = {
                 ssid: ssid,
-            }
+                channel: channel,
+                bssid: bssid
+           }
         }
         $.ajax({
             url: '/networks/monitor/scan',
@@ -103,6 +105,7 @@
 
 
    function result(){
+        $('tbody').empty()
         $.ajax({
             url: '/networks/monitor/result',
             type: 'get',
@@ -119,14 +122,14 @@
                     try{
                         let table_row = "<tr class='whitespace-nowrap'"+` id=row${i}>`+"</tr>";
                         $('#list-member').append(table_row);
+                        console.log(data)
                         if(data[0] !== "BSSID"){
                             const ssid = data[13]
                             const channel = data[3]
                             const bssid = data[0]
-                            const security = data[6]
-                            const interface = "wlp3s0mon"
+                            const security = data[5]
 
-                            const btn = "<button class='bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-full' onclick='decrypt(\""+ssid+"\",\""+channel+"\",\""+bssid+"\",\""+interface+"\",\""+security+"\")'>"+ "decrypt" +"</button>"
+                            const btn = "<button class='bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded-full' onclick='decrypt(\""+ssid+"\",\""+channel+"\",\""+bssid+"\",\""+security+"\")'>"+ "decrypt" +"</button>"
                             $(`#row${i}`).append(btn)
 
                         }else{
