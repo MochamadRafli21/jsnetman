@@ -97,7 +97,7 @@
                 $('#restext').append(lines)
             },
             error: function( errorThrown ){
-                console.log(errorThrown)
+                console.warn(errorThrown)
                 // decrypt(ssid, channel, bssid, security)
             }
         });
@@ -114,15 +114,12 @@
                 var len = response.length;
                 for(let i = 0; i < len; i++){
                     const data = response[i].split(',')
-                    console.log()
-                    console.log(data[0])
                     if(data[0] === "Station MAC"){
                         break
                     }
                     try{
                         let table_row = "<tr class='whitespace-nowrap'"+` id=row${i}>`+"</tr>";
                         $('#list-member').append(table_row);
-                        console.log(data)
                         if(data[0] !== "BSSID"){
                             const ssid = data[13]
                             const channel = data[3]

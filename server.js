@@ -66,11 +66,11 @@ const startInterFace = (interface) => {
 
 const tunnelMonitor = (name, channel, tragetBssid, interface) => {
   return new Promise((resolve, reject) => {
-    exec(`echo "aalagung06" | sudo -S timeout 100s airodump-ng --bssid ${tragetBssid} --essid ${name} -c ${channel} -w scan/output ${interface}`, { maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
+    exec(`echo "aalagung06" | sudo -S timeout 20s airodump-ng --bssid ${tragetBssid} --essid ${name} -c ${channel} -w scan/output ${interface}`, { maxBuffer: 1024 * 10000000 }, (err, stdout, stderr) => {
       if (err) {
         console.warn(`exec error: ${err}`);
       }
-      console.log(stdout.toString())
+      console.log(stdout)
       resolve(stdout? stdout.toString():stderr)
     })
   })
@@ -146,7 +146,7 @@ app.get('/networks/monitor/scan', jsonParser, async(req, res) => {
 app.post('/networks/monitor/scan', jsonParser, async(req, res) => {
   const {ssid, channel, bssid, password} = req.body
   const interface = getListInterface()
-  await tunnelMonitor(ssid, channel, bssid, interface)
+  const test = await tunnelMonitor(ssid, channel, bssid, interface)
   let ls = spawnSync("ls", ["scan"])
   let files = ls.stdout.toString().trim().split("\n")
   for(let i = 0 ; i < files.length; i++){
@@ -208,11 +208,11 @@ app.get('/networks/connect',jsonParser, async(req,res) => {
       await network
         .getDeviceInfoIPDetail(ethernet.DEVICE)
         .then((data) => networks.push(data))
-        .catch((error) => console.log(error));
+        .catch((error) => console.warn(error));
       await network
         .getDeviceInfoIPDetail(device.DEVICE)
         .then((data) => networks.push(data))
-        .catch((error) => console.log(error));
+        .catch((error) => console.warn(error));
     })
     if(networks.length >= 1){
       const nmap = spawnSync('nmap',[networks[0].gatewayV4])
@@ -245,7 +245,7 @@ app.post('/networks/connect',jsonParser, async(req,res) => {
     try{
       await wifi.connect({ ssid: ssid, password: password });
     }catch(e){
-      console.log(e)
+      console.warn(e)
     }
     res.json({status:"success"})
       
